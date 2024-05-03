@@ -1,10 +1,14 @@
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
+
+import java.security.Key;
 import java.security.SecureRandom;
 import java.util.Base64;
 
 public class UtilidadesAES {
-    public static String encrypt(String plainText, SecretKey key) throws Exception {
+    public static String encrypt(String plainText, Key key) throws Exception {
+
+
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         byte[] iv = new byte[16];
         new SecureRandom().nextBytes(iv);

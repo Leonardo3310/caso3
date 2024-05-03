@@ -1,30 +1,44 @@
 import java.io.*;
 import java.math.BigInteger;
 import java.net.*;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-
 public class Server extends Thread{
 
-    private BigInteger llavePrivada;
-    public BigInteger llavePublica;
+    private PrivateKey llavePrivada;
+    public PublicKey llavePublica;
     private BigInteger numeroP;
     private Integer numeroG;
 
-    public Server() throws NoSuchAlgorithmException{
-        // generacion de llaves privadas y publicas
 
-        KeyGenerator keygenerator = KeyGenerator.getInstance("AES"); 
-        SecretKey key = keygenerator.generateKey();
+    // Aca inicializamos la clase para firmar y verificar los datos que nos envien
+    private UtilidadesRSA cipherRSA;
+
+    public Server() throws NoSuchAlgorithmException{
+
+        // Generamos el par de llaves con el algoritmo RSA
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+
+        // Inicializamos el generador de las llaves
+		generator.initialize(1024);
+        //generamos el par de llaves
+		KeyPair keyPair = generator.generateKeyPair();
+		llavePrivada = keyPair.getPrivate();
+        llavePublica =keyPair.getPublic();
+
+        cipherRSA = new UtilidadesRSA();
     }
 
 
-    public static byte[] hexStringToByteArray(String s) {
+
+    public byte[] hexStringToByteArray(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
@@ -34,7 +48,7 @@ public class Server extends Thread{
         return data;
     }
 
-    public static byte[] calculateSHA512(String hexString) {
+    public byte[] calculateSHA512(String hexString) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-512");
             return digest.digest(hexStringToByteArray(hexString));
@@ -44,7 +58,7 @@ public class Server extends Thread{
         }
     }
 
-     public static byte[] generateIV() {
+     public byte[] generateIV() {
         SecureRandom random = new SecureRandom();
         byte[] iv = new byte[16];
         random.nextBytes(iv);
@@ -52,7 +66,7 @@ public class Server extends Thread{
     }
 
 
-    public static byte[] generateReto(){
+    public byte[] generateReto(){
         SecureRandom random = new SecureRandom();
         byte[] reto = new byte[16];
         random.nextBytes(reto);
@@ -75,40 +89,73 @@ public class Server extends Thread{
         
         numeroG = 2;
         numeroP =  new BigInteger(1,bytes);
-
     }
 
-    @Override
+    public PublicKey getPublicKey(){
+        return llavePublica;
+    }
+    
     public void run() {
-        
-
         try {
             int port = 1234; // Puerto en el que escucha el servidor
             ServerSocket serverSocket = new ServerSocket(port);
             System.out.println("Servidor iniciado en el puerto " + port);
             while (true) {
+
                 Socket clientSocket = serverSocket.accept(); // Aceptar conexión del cliente
-                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                
-                
+                ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+                ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
 
-                String inputLine = in.readLine();
-                String[] partido = inputLine.split(",");
+                // PASO 2 : INICIALIZACION Y RECIBO DEL RETO
+                // Aca tomamos el String que mando el cliente el cual inciializa la conexion con el servidor como SECURE INIT
+                String inicializacion = (String) in.readObject();
 
-                if(partido[0].equals("SECURE INIT")){
-                    byte[] reto = generateReto();
-                    BigInteger retoInt = new BigInteger(reto);
+                System.out.println(inicializacion);
 
-                    // sacamos el RETO y lo ciframos con nuestra llave privada 
+                // Si el string esta incorrecto es decir que la inicializacion esta mal por lo cual enviamos una excepcion
+                if(! (inicializacion.equals("SECURE INIT"))){
+                    System.out.println(inicializacion.equals("SECURE INIT"));
+                    throw new Exception("Inicializacion mal hecha");
                 }
+
+                // Cuando ya inicializamos la conexion recibimos el reto que es un array de 16 bytes aleatorios
+                byte[] reto =(byte[]) in.readObject();
+
+                // Ciframos el reto que acabamos de recibir con nuestra llave privada
+                byte[] retoCifrado = cipherRSA.firmar(reto, llavePrivada);
+
+                // validamos que el cifrado se hizo de forma completa
+                if(retoCifrado ==null){
+                    throw new Exception("Cifrado RSA PASO 2 es null");
+
+                }
+
+                // Enviamos el reto cifrado al cliente
+                out.writeObject(retoCifrado);
+
                 
-                serverSocket.close();
+
+                
+                
+
+
+
+
+
+                
+                
+
+                
+                
+                
 
 
             }
         } catch (Exception e) {
             e.printStackTrace();
         } 
+        
+
+        
     }
 }
