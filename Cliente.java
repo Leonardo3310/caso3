@@ -7,9 +7,10 @@ public class Cliente {
         String hostName = "localhost"; // Dirección del servidor
         int port = 1234; // Puerto del servidor
 
-        try (Socket socket = new Socket(hostName, port);
-             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+        try{
+            Socket socket = new Socket(hostName, port);
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             out.println("SECURE INIT,LLEGAMOS LOKA"); // Enviar el RETO al servidor
 
