@@ -160,6 +160,9 @@ public class Server extends Thread{
                 if(confirmacion.equals("ERROR")){
                     throw new Exception("Reto no verificado, mal hecho");
                 }
+                if(confirmacion.equals("ERROR")){
+                    break;
+                }
 
                 // llamamos a la funcion de generar P  y G 
                 // Guarda esos numero en variables globales para que los usemos
@@ -175,7 +178,7 @@ public class Server extends Thread{
                 String numerosConcatenados = numeroG + "" + numeroP + numeroGElevadoAX ;
             
 
-                System.out.println(numerosConcatenados);
+                
 
                 // Hacemos el cifrado de el numero G, numero P y el numero G elevado a la x como String
                 String numerosCifrados = cipherRSA.firmarString(numerosConcatenados, llavePrivada);
@@ -186,6 +189,29 @@ public class Server extends Thread{
                 out.writeObject(numeroGElevadoAX);
                 out.writeObject(vectorInicializacion);
                 out.writeObject(numerosCifrados);
+
+                //esperamos el mensaje de verificacion del cliente
+                String verificacionNumeros = (String)in.readObject();
+
+                // Alzamos una excepcion si existe un error en la verificacion de los numeros
+                if(verificacionNumeros.equals("ERROR")){
+                    throw new Exception("Reto no verificado, mal hecho");    
+                }
+                if(verificacionNumeros.equals("ERROR")){
+                    break;
+                }
+
+                // recibir el numero G elevado a la Y del cliente
+                Integer numeroGElevadoALaY = (int)in.readObject();
+
+                // elevar a la x el numero que nos dieron elevado a la y
+                Integer numeroFinal = (int)Math.pow((double) numeroGElevadoALaY, (double)numeroX);
+
+
+                System.out.println("Numero Final Servidor: " + numeroFinal);
+
+
+
 
 
             }

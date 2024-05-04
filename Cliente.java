@@ -3,6 +3,7 @@ import java.math.BigInteger;
 import java.net.*;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.util.Random;
 
 
 public class Cliente extends Thread {
@@ -10,9 +11,16 @@ public class Cliente extends Thread {
     private Server servidor;
     private UtilidadesRSA cipherRSA;
 
+    private Integer numeroY;
+
     public Cliente(Server servidor){
         this.servidor = servidor;
         this.cipherRSA = new UtilidadesRSA();
+    }
+
+    public void createNumeroY(){
+        Random random = new Random();
+        numeroY =  random.nextInt(15);
     }
 
     @Override
@@ -71,13 +79,39 @@ public class Cliente extends Thread {
             // Generamos la concatenacion de los numeros
             String numerosConcatenados = numeroG + "" + numeroP + numeroGElevadoALaX ;
             
-            System.out.println(numerosConcatenados);
-            System.out.println(numerosCifrados);
+            
             //verificamos los numero cifrados
             Boolean verificacionNumerosCifrados = cipherRSA.verificarFirmaString(numerosConcatenados, numerosCifrados, publicKey);
 
+            // Mandamos la confirmacion de los numeros cifrados al servidor
+            if(verificacionNumerosCifrados){
+                out.writeObject("OK");
+            }
+            else{
+                out.writeObject("ERROR");
+            }
 
-            System.out.println(verificacionNumerosCifrados);
+            // crear el numeroY
+            createNumeroY();
+
+            // Crear el numero G elevado a la Y
+            Integer numeroGElevadoALaY = (int) Math.pow((double)numeroG, (double)numeroY);
+
+            System.out.println(numeroY);
+
+            //enviar el numero Y
+            out.writeObject(numeroGElevadoALaY);
+
+            // elevar a la y el numero G elevado a la x
+            Integer numeroFinal = (int)Math.pow((double) numeroGElevadoALaX, (double)numeroY);
+
+
+            System.out.println("Numero Final Cliente: " + numeroFinal);
+
+
+
+
+            
 
 
             
