@@ -1,4 +1,5 @@
 import java.io.*;
+import java.math.BigInteger;
 import java.net.*;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -45,15 +46,33 @@ public class Cliente extends Thread {
 
             // Con la llave publica desciframos el reto que teniamos
             Boolean retoVerificado = cipherRSA.verificarFirma(reto, retoCifrado, publicKey);
-
-            System.out.println(retoVerificado);
-
+           
+            // Verificamos en esta parte si coincidio la verificacion del reto o si no
             if(retoVerificado){
-                System.out.println("LO LOGRAMOS MARIANA");
+                out.writeObject("OK");
             }
             else{
-                System.out.println("No lo logramos :(");
+                out.writeObject("ERROR");
             }
+
+            //esperamos el numero G
+            Integer numeroG = (int)in.readObject();
+            //esperamos el numero P
+            BigInteger numeroP = (BigInteger)in.readObject();
+            //esperamos el numero G elevado a la X
+            Integer numeroGElevadoALaX = (int)in.readObject();
+
+            // esperamos el vector de inicializacion
+            byte[] vectorInicializacion = (byte[])in.readObject();
+
+            // esperamos los numero cifrados
+            String numerosCifrados = (String) in.readObject();
+
+            String[] numerosCifradosList = numerosCifrados.split(",");
+
+
+            System.out.println(numeroG);
+            
 
 
             

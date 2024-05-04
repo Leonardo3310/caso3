@@ -23,5 +23,19 @@ public class UtilidadesRSA {
         return sig.verify(signature);
     }
 
+    public String firmarString(String data, PrivateKey privateKey) throws Exception {
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        signature.initSign(privateKey);
+        signature.update(data.getBytes());
+        return Base64.getEncoder().encodeToString(signature.sign());
+    }
+
+    public boolean verificarFirmaString(String data, String signature, PublicKey publicKey) throws Exception {
+        Signature sig = Signature.getInstance("SHA256withRSA");
+        sig.initVerify(publicKey);
+        sig.update(data.getBytes());
+        return sig.verify(Base64.getDecoder().decode(signature));
+    }
+
     
 }
