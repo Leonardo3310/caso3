@@ -28,8 +28,12 @@ public class Server extends Thread{
     // numero G especifico para calcular Diffie Hellman
     private Integer numeroG;
 
+
+    // el numero y para calcular Diffie Hellamn
+    private BigInteger numeroY;
+
     // numero X privado para calcular Diffie Hellman
-    private Integer numeroX;
+    private BigInteger numeroX;
 
 
     // Aca inicializamos la clase para firmar y verificar los datos que nos envien
@@ -103,9 +107,29 @@ public class Server extends Thread{
         // Asignamos como Big Integer el numero P
         numeroP =  new BigInteger(bytes);
 
+        // Usamos Random para crear el numero x
         Random random = new Random();
 
-        numeroX = random.nextInt(15);
+        // añadimos el limite al que puede estar
+        Integer limite = numeroP.subtract(new BigInteger("1")).intValue();
+
+        // Generar un número aleatorio dentro del rango [0, limiteInt)
+        int numeroXInt = random.nextInt(limite);
+
+        // Convertir el número aleatorio generado a un BigInteger
+        numeroX = BigInteger.valueOf(numeroXInt);
+
+        
+    }
+
+    public void generateNumeroY(){
+        BigInteger numeroGBigIntegr =new BigInteger(String.valueOf(numeroG));
+
+        BigInteger numeroXBigInteger = new BigInteger(String.valueOf(numeroX));
+
+
+        numeroY = numeroGBigIntegr.modPow(numeroXBigInteger, numeroP);
+
     }
 
 
@@ -169,29 +193,44 @@ public class Server extends Thread{
                 generatePandG();
 
                 // Generar el numero G elevado a la X 
-                Integer numeroGElevadoAX = (int) Math.pow((double)numeroG, (double)numeroX);
+                BigInteger numeroGElevadoAX = BigInteger.valueOf(numeroG).pow(numeroX.intValue()).mod(numeroP);
+                System.out.println("calculo G elevado a la x ");
 
+                
                 // calculamos el vector de inicializacion
                 byte[] vectorInicializacion = generateIV();
 
+                String numeroString = numeroGElevadoAX +"";
+
+                
+
                 // Concatenamos los diferentes numeros en un string para enviarlos al Cliente
-                String numerosConcatenados = numeroG + "" + numeroP + numeroGElevadoAX ;
+                String numerosConcatenados = numeroG + "" + numeroP + numeroGElevadoAX.toString() ;
+
+                System.out.println("Concateno numeros ");
             
 
                 
 
+
                 // Hacemos el cifrado de el numero G, numero P y el numero G elevado a la x como String
                 String numerosCifrados = cipherRSA.firmarString(numerosConcatenados, llavePrivada);
 
+                
 
+                System.out.println("llego a numeros cifrados");
                 out.writeObject(numeroG);
                 out.writeObject(numeroP);
                 out.writeObject(numeroGElevadoAX);
                 out.writeObject(vectorInicializacion);
                 out.writeObject(numerosCifrados);
 
+                
+
                 //esperamos el mensaje de verificacion del cliente
                 String verificacionNumeros = (String)in.readObject();
+
+                System.out.println("salio verificacion de numeros");
 
                 // Alzamos una excepcion si existe un error en la verificacion de los numeros
                 if(verificacionNumeros.equals("ERROR")){
@@ -202,10 +241,10 @@ public class Server extends Thread{
                 }
 
                 // recibir el numero G elevado a la Y del cliente
-                Integer numeroGElevadoALaY = (int)in.readObject();
+                BigInteger numeroGElevadoALaY = (BigInteger)in.readObject();
 
                 // elevar a la x el numero que nos dieron elevado a la y
-                Integer numeroFinal = (int)Math.pow((double) numeroGElevadoALaY, (double)numeroX);
+                BigInteger numeroFinal = numeroGElevadoALaY.modPow(numeroX , numeroP);
 
 
                 System.out.println("Numero Final Servidor: " + numeroFinal);

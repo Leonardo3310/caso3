@@ -11,16 +11,28 @@ public class Cliente extends Thread {
     private Server servidor;
     private UtilidadesRSA cipherRSA;
 
-    private Integer numeroY;
+    private BigInteger numeroY;
 
     public Cliente(Server servidor){
         this.servidor = servidor;
         this.cipherRSA = new UtilidadesRSA();
     }
 
-    public void createNumeroY(){
-        Random random = new Random();
-        numeroY =  random.nextInt(15);
+   
+
+    public void createNumeroY(BigInteger numeroP){
+         // Usamos Random para crear el numero x
+         Random random = new Random();
+
+         // añadimos el limite al que puede estar
+         Integer limite = numeroP.subtract(new BigInteger("1")).intValue();
+ 
+         // Generar un número aleatorio dentro del rango [0, limiteInt)
+         int numeroXInt= random.nextInt(limite);
+
+         // asignamos al numero x 
+         numeroY = BigInteger.valueOf(numeroXInt);
+        
     }
 
     @Override
@@ -63,12 +75,14 @@ public class Cliente extends Thread {
                 out.writeObject("ERROR");
             }
 
+
             //esperamos el numero G
             Integer numeroG = (int)in.readObject();
             //esperamos el numero P
             BigInteger numeroP = (BigInteger)in.readObject();
+
             //esperamos el numero G elevado a la X
-            Integer numeroGElevadoALaX = (int)in.readObject();
+            BigInteger numeroGElevadoALaX =(BigInteger) in.readObject();
 
             // esperamos el vector de inicializacion
             byte[] vectorInicializacion = (byte[])in.readObject();
@@ -91,19 +105,24 @@ public class Cliente extends Thread {
                 out.writeObject("ERROR");
             }
 
-            // crear el numeroY
-            createNumeroY();
+            
+
+            
+
+            // crear el numero X Secreto
+            createNumeroY(numeroP);
 
             // Crear el numero G elevado a la Y
-            Integer numeroGElevadoALaY = (int) Math.pow((double)numeroG, (double)numeroY);
+            BigInteger numeroGElevadoALaY = BigInteger.valueOf(numeroG).pow(numeroY.intValue()).mod(numeroP);
 
             System.out.println(numeroY);
 
-            //enviar el numero Y
+            //enviar el numero G elevado a la Y
             out.writeObject(numeroGElevadoALaY);
 
             // elevar a la y el numero G elevado a la x
-            Integer numeroFinal = (int)Math.pow((double) numeroGElevadoALaX, (double)numeroY);
+            BigInteger numeroFinal = numeroGElevadoALaX.modPow( numeroY,numeroP);
+
 
 
             System.out.println("Numero Final Cliente: " + numeroFinal);
