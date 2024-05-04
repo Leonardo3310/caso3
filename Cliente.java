@@ -26,10 +26,13 @@ public class Cliente extends Thread {
 
     private String contraseña;
 
-    public Cliente(Server servidor){
+    private int port;
+
+    public Cliente(Server servidor, int port){
         this.servidor = servidor;
         this.cipherRSA = new UtilidadesRSA();
         this.cipherAES = new UtilidadesAES();
+        this.port = port;
     }
 
    
@@ -77,7 +80,6 @@ public class Cliente extends Thread {
     @Override
     public void run()  {
         String hostName = "localhost"; // Dirección del servidor
-        int port = 1234; // Puerto del servidor
 
         try{
             Socket socket = new Socket(hostName, port);
@@ -200,11 +202,11 @@ public class Cliente extends Thread {
             System.out.println("Contraseña: " +contraseña);
 
             // ciframos con AES y la llave simetrica el login
-            String loginCifrado = cipherAES.encrypt(login, llaveSimetrica);
+            String loginCifrado = cipherAES.encrypt(login, llaveSimetrica, vectorInicializacion);
 
             //ciframos con AES y la llave simetrica la contraseña
 
-            String contraseñaCifrada = cipherAES.encrypt(contraseña, llaveSimetrica);
+            String contraseñaCifrada = cipherAES.encrypt(contraseña, llaveSimetrica, vectorInicializacion);
 
             System.out.println("Contraseña cifrada Cliente:" +contraseñaCifrada);
 

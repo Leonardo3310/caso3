@@ -6,11 +6,10 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 public class UtilidadesAES {
-    public String encrypt(String plainText, Key key) throws Exception {
+    public String encrypt(String plainText, Key key, byte[] vectorInicializacion) throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        byte[] iv = new byte[16];
-        new SecureRandom().nextBytes(iv);
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+        
+        IvParameterSpec ivSpec = new IvParameterSpec(vectorInicializacion);
         cipher.init(Cipher.ENCRYPT_MODE, key, ivSpec);
         byte[] encrypted = cipher.doFinal(plainText.getBytes());
         return Base64.getEncoder().encodeToString(encrypted);

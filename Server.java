@@ -38,7 +38,14 @@ public class Server extends Thread{
     // Aca inicializamos la clase para firmar y verificar los datos que nos envien
     private UtilidadesRSA cipherRSA;
 
-    public Server() throws NoSuchAlgorithmException{
+
+    // Aca inicializamos la clase para el cifrado asimetrico
+    private UtilidadesAES cipherAES;
+
+
+    private int port;
+
+    public Server(int port) throws NoSuchAlgorithmException{
 
         // Generamos el par de llaves con el algoritmo RSA
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
@@ -53,6 +60,10 @@ public class Server extends Thread{
         llavePublica =keyPair.getPublic();
         // Asignamos el cipher como utilidades para el cifrado Asimetrico
         cipherRSA = new UtilidadesRSA();
+        // Asignamos el cipher como utilidades para el cifrado simetrico
+        cipherAES = new UtilidadesAES();
+
+        this.port = port;
     }
 
 
@@ -146,17 +157,17 @@ public class Server extends Thread{
     
     public void run() {
         try {
-            int port = 1234; // Puerto en el que escucha el servidor
+           
             ServerSocket serverSocket = new ServerSocket(port);
             System.out.println("Servidor iniciado en el puerto " + port);
             Boolean bandera = true;
 
-            while (bandera) {
-                Socket clientSocket = serverSocket.accept(); // Aceptar conexión del cliente
-                ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
-                ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+           
+            Socket clientSocket = serverSocket.accept(); // Aceptar conexión del cliente
+            ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
 
-                // PASO 2 : INICIALIZACION Y RECIBO DEL RETO
+            // PASO 2 : INICIALIZACION Y RECIBO DEL RETO
                 // Aca tomamos el String que mando el cliente el cual inciializa la conexion con el servidor como SECURE INIT
                 String inicializacion = (String) in.readObject();
 
@@ -190,9 +201,7 @@ public class Server extends Thread{
                 if(confirmacion.equals("ERROR")){
                     throw new Exception("Reto no verificado, mal hecho");
                 }
-                if(confirmacion.equals("ERROR")){
-                    break;
-                }
+                
 
                 // llamamos a la funcion de generar P  y G
                 // Guarda esos numero en variables globales para que los usemos
@@ -230,9 +239,7 @@ public class Server extends Thread{
                 if(verificacionNumeros.equals("ERROR")){
                     throw new Exception("Reto no verificado, mal hecho");
                 }
-                if(verificacionNumeros.equals("ERROR")){
-                    break;
-                }
+                
 
                 // recibir el numero G elevado a la Y del cliente
                 BigInteger numeroGElevadoALaY = (BigInteger)in.readObject();
@@ -268,7 +275,12 @@ public class Server extends Thread{
 
                 System.out.println("Contraseña cifrada Servidor:" +contraseñaCifrada);
                 
+                String loginVerificado = cipherAES.decrypt(loginCifrado, llaveSimetrica, vectorInicializacion);
 
+                System.out.println(loginVerificado);
+
+
+                clientSocket.close();
                 
                 
 
@@ -280,7 +292,7 @@ public class Server extends Thread{
 
 
 
-            }
+            
         } catch (Exception e) {
             e.printStackTrace();
         } 
