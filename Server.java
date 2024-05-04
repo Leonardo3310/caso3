@@ -172,7 +172,10 @@ public class Server extends Thread{
                 byte[] vectorInicializacion = generateIV();
 
                 // Concatenamos los diferentes numeros en un string para enviarlos al Cliente
-                String numerosConcatenados = numeroG + "," + numeroP + "," + numeroGElevadoAX ;
+                String numerosConcatenados = numeroG + "" + numeroP + numeroGElevadoAX ;
+            
+
+                System.out.println(numerosConcatenados);
 
                 // Hacemos el cifrado de el numero G, numero P y el numero G elevado a la x como String
                 String numerosCifrados = cipherRSA.firmarString(numerosConcatenados, llavePrivada);

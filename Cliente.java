@@ -68,10 +68,22 @@ public class Cliente extends Thread {
             // esperamos los numero cifrados
             String numerosCifrados = (String) in.readObject();
 
-            String[] numerosCifradosList = numerosCifrados.split(",");
+            // Generamos la concatenacion de los numeros
+            String numerosConcatenados = numeroG + "" + numeroP + numeroGElevadoALaX ;
+            
+            System.out.println(numerosConcatenados);
+            System.out.println(numerosCifrados);
+            //verificamos los numero cifrados
+            Boolean verificacionNumerosCifrados = cipherRSA.verificarFirmaString(numerosConcatenados, numerosCifrados, publicKey);
 
 
-            System.out.println(numeroG);
+            System.out.println(verificacionNumerosCifrados);
+
+
+            
+
+
+            
             
 
 
