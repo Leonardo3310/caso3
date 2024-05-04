@@ -6,7 +6,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 public class UtilidadesAES {
-    public static String encrypt(String plainText, Key key) throws Exception {
+    public String encrypt(String plainText, Key key) throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         byte[] iv = new byte[16];
         new SecureRandom().nextBytes(iv);
@@ -16,7 +16,7 @@ public class UtilidadesAES {
         return Base64.getEncoder().encodeToString(encrypted);
     }
 
-    public static String decrypt(String cipherText, SecretKey key, byte[] iv) throws Exception {
+    public String decrypt(String cipherText, SecretKey key, byte[] iv) throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
         cipher.init(Cipher.DECRYPT_MODE, key, ivSpec);

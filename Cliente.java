@@ -7,6 +7,7 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.UUID;
 
 import javax.crypto.spec.SecretKeySpec;
 
@@ -16,11 +17,19 @@ public class Cliente extends Thread {
     private Server servidor;
     private UtilidadesRSA cipherRSA;
 
+
+    private UtilidadesAES cipherAES;
+
     private BigInteger numeroY;
+
+    private String login;
+
+    private String contraseña;
 
     public Cliente(Server servidor){
         this.servidor = servidor;
         this.cipherRSA = new UtilidadesRSA();
+        this.cipherAES = new UtilidadesAES();
     }
 
    
@@ -48,6 +57,21 @@ public class Cliente extends Thread {
             e.printStackTrace();
             return null;
         }
+    }
+
+
+    public void createLoginAndPassword(){
+        // en este caso creamos un login y un password aleatorios
+
+        // usamos la clase UIID para crear cadenas de caracteres aleatorias
+        UUID uuid =  UUID.randomUUID();
+
+        // Convertimos este en un stirng y sacamos las primeras 10 letras
+        login  =uuid.toString().substring(0,10);
+
+        // usamos las otras diez letras para hacer la contraseña
+        contraseña = uuid.toString().substring(11,21);
+
     }
 
     @Override
@@ -158,8 +182,40 @@ public class Cliente extends Thread {
             SecretKeySpec llaveHash =  new SecretKeySpec(bytesHash, "HMACSHA256");
 
 
-            System.out.println("llave hash destruida cliente: "+ llaveHash.isDestroyed());
-                System.out.println("llave simetrica destruida cliente: "+ llaveSimetrica.isDestroyed());
+            // recibimos la respuesta del servidor para continuar con el proceso
+            String preguntaContinuar = (String)in.readObject();
+
+            // validamos la respuesta del servidor para continuar con lo propuesto
+            if(!preguntaContinuar.equals("CONTINUAR")){
+                socket.close();
+                throw new Exception("El servidor no desea continuar con la conexion");
+            }
+
+
+            // creamos un nuevo login y una contraseña
+            createLoginAndPassword();
+
+
+            System.out.println("Login: "+ login);
+            System.out.println("Contraseña: " +contraseña);
+
+            // ciframos con AES y la llave simetrica el login
+            String loginCifrado = cipherAES.encrypt(login, llaveSimetrica);
+
+            //ciframos con AES y la llave simetrica la contraseña
+
+            String contraseñaCifrada = cipherAES.encrypt(contraseña, llaveSimetrica);
+
+            System.out.println("Contraseña cifrada Cliente:" +contraseñaCifrada);
+
+            out.writeObject(loginCifrado);
+            out.writeObject(contraseñaCifrada);
+
+
+
+
+
+
 
            
 
@@ -178,7 +234,7 @@ public class Cliente extends Thread {
         } catch(Exception e){
                 e.printStackTrace();
                 
-        }
+        } 
     }
 
 

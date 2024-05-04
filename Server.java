@@ -257,10 +257,19 @@ public class Server extends Thread{
 
                 // pasamos a llave los bytes de la llave para Hash
                 SecretKeySpec llaveHash =  new SecretKeySpec(bytesHash, "HMACSHA256");
+
+
+                // Le decimos al cliente que continue con el proceso
+                out.writeObject("CONTINUAR");
+
+
+                String loginCifrado = (String) in.readObject();
+                String contraseñaCifrada = (String)  in.readObject();
+
+                System.out.println("Contraseña cifrada Servidor:" +contraseñaCifrada);
                 
 
-                System.out.println("llave hash destruida server: "+ llaveHash.isDestroyed());
-                System.out.println("llave simetrica destruida server: "+ llaveSimetrica.isDestroyed());
+                
                 
 
 
