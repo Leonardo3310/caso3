@@ -1,8 +1,11 @@
 import java.io.*;
 import java.math.BigInteger;
 import java.net.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Random;
 
 
@@ -33,6 +36,16 @@ public class Cliente extends Thread {
          // asignamos al numero x 
          numeroY = BigInteger.valueOf(numeroXInt);
         
+    }
+
+    public byte[] calculateSHA512(byte[] messageInString) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-512");
+            return digest.digest(messageInString);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
@@ -124,23 +137,21 @@ public class Cliente extends Thread {
             BigInteger numeroFinal = numeroGElevadoALaX.modPow( numeroY,numeroP);
 
 
+            // Imprimir la llave maestra del Cliente
+            System.out.println("Llave Maestra Cliente: " + numeroFinal);
 
-            System.out.println("Numero Final Cliente: " + numeroFinal);
+            // Hacer digest con SHA-512
+            byte[] digestWithSHA512 = calculateSHA512(numeroFinal.toByteArray());
 
-
-
-
-            
-
-
-            
-
-
-            
-            
+            // Con los primeros 256 bits sacar la llave para encriptar
+            byte[] llaveSimetrica = Arrays.copyOfRange(digestWithSHA512, 0, 32); 
+                
+            // con los ultimos 256 bits sacar la llave para hacer el HMAC
+            byte[] llaveHash = Arrays.copyOfRange(digestWithSHA512, 32, 64);      
 
 
-            
+           
+
 
             // Cerramos el socket  
             socket.close();

@@ -9,10 +9,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.util.Arrays;
-
 import java.util.Random;
-
-import java.lang.Math.*;
 
 public class Server extends Thread{
 
@@ -48,9 +45,11 @@ public class Server extends Thread{
 		generator.initialize(1024);
         //generamos el par de llaves
 		KeyPair keyPair = generator.generateKeyPair();
+        // Sacamos la llave privada
 		llavePrivada = keyPair.getPrivate();
+        // Sacamos la llave Publica
         llavePublica =keyPair.getPublic();
-
+        // Asignamos el cipher como utilidades para el cifrado Asimetrico
         cipherRSA = new UtilidadesRSA();
     }
 
@@ -67,10 +66,10 @@ public class Server extends Thread{
         return data;
     }
 
-    public byte[] calculateSHA512(String hexString) {
+    public byte[] calculateSHA512(byte[] messageInString) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-512");
-            return digest.digest(hexStringToByteArray(hexString));
+            return digest.digest(messageInString);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
             return null;
@@ -90,6 +89,11 @@ public class Server extends Thread{
         byte[] reto = new byte[16];
         random.nextBytes(reto);
         return reto;
+    }
+
+
+    public void generateKeys(BigInteger llaveMaestra){
+        
     }
 
     // Funcion para generar el numero P y G para el algoritmo de diffie hellman
@@ -188,41 +192,31 @@ public class Server extends Thread{
                     break;
                 }
 
-                // llamamos a la funcion de generar P  y G 
+                // llamamos a la funcion de generar P  y G
                 // Guarda esos numero en variables globales para que los usemos
                 generatePandG();
 
                 // Generar el numero G elevado a la X 
                 BigInteger numeroGElevadoAX = BigInteger.valueOf(numeroG).pow(numeroX.intValue()).mod(numeroP);
-                System.out.println("calculo G elevado a la x ");
 
-                
                 // calculamos el vector de inicializacion
                 byte[] vectorInicializacion = generateIV();
-
-                String numeroString = numeroGElevadoAX +"";
-
-                
 
                 // Concatenamos los diferentes numeros en un string para enviarlos al Cliente
                 String numerosConcatenados = numeroG + "" + numeroP + numeroGElevadoAX.toString() ;
 
-                System.out.println("Concateno numeros ");
-            
-
-                
-
-
                 // Hacemos el cifrado de el numero G, numero P y el numero G elevado a la x como String
                 String numerosCifrados = cipherRSA.firmarString(numerosConcatenados, llavePrivada);
 
-                
-
-                System.out.println("llego a numeros cifrados");
+                // Enviamos el numero G al cliente
                 out.writeObject(numeroG);
+                // Enviamos el numero P al cliente
                 out.writeObject(numeroP);
+                // Enviamos el numero G elevdo a la X al cliente
                 out.writeObject(numeroGElevadoAX);
+                // Enviamos el vector de inciializacion para el cifrado simetrico
                 out.writeObject(vectorInicializacion);
+                // enviamos los numeros P, G y G elevado a la x cifrados, y se lo enviamos al cliente
                 out.writeObject(numerosCifrados);
 
                 
@@ -230,11 +224,9 @@ public class Server extends Thread{
                 //esperamos el mensaje de verificacion del cliente
                 String verificacionNumeros = (String)in.readObject();
 
-                System.out.println("salio verificacion de numeros");
-
                 // Alzamos una excepcion si existe un error en la verificacion de los numeros
                 if(verificacionNumeros.equals("ERROR")){
-                    throw new Exception("Reto no verificado, mal hecho");    
+                    throw new Exception("Reto no verificado, mal hecho");
                 }
                 if(verificacionNumeros.equals("ERROR")){
                     break;
@@ -246,8 +238,23 @@ public class Server extends Thread{
                 // elevar a la x el numero que nos dieron elevado a la y
                 BigInteger numeroFinal = numeroGElevadoALaY.modPow(numeroX , numeroP);
 
+                //  Imprimir la llave maestra del servidor
+                System.out.println("Llave Maestra Servidor: " + numeroFinal);
 
-                System.out.println("Numero Final Servidor: " + numeroFinal);
+                // Hacer digest con SHA-512
+                byte[] digestWithSHA512 = calculateSHA512(numeroFinal.toByteArray());
+
+                // Con los primeros 256 bits sacar la llave para encriptar
+                byte[] llaveSimetrica = Arrays.copyOfRange(digestWithSHA512, 0, 32); // Primeros 256 bits
+
+                // con los ultimos 256 bits sacar la llave para hacer el HMAC
+                byte[] llaveHash = Arrays.copyOfRange(digestWithSHA512, 32, 64);      // Últimos 256 bits
+
+                
+
+
+                
+
 
 
 
