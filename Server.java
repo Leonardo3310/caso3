@@ -11,6 +11,8 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Random;
 
+import javax.crypto.spec.SecretKeySpec;
+
 public class Server extends Thread{
 
     //llave privada del servidor
@@ -245,11 +247,20 @@ public class Server extends Thread{
                 byte[] digestWithSHA512 = calculateSHA512(numeroFinal.toByteArray());
 
                 // Con los primeros 256 bits sacar la llave para encriptar
-                byte[] llaveSimetrica = Arrays.copyOfRange(digestWithSHA512, 0, 32); // Primeros 256 bits
+                byte[] bytesSimetrica = Arrays.copyOfRange(digestWithSHA512, 0, 32); // Primeros 256 bits
 
                 // con los ultimos 256 bits sacar la llave para hacer el HMAC
-                byte[] llaveHash = Arrays.copyOfRange(digestWithSHA512, 32, 64);      // Últimos 256 bits
+                byte[] bytesHash = Arrays.copyOfRange(digestWithSHA512, 32, 64);      // Últimos 256 bits
 
+                // pasamos a llaves los bytes de la llave Simetrica
+                SecretKeySpec llaveSimetrica = new SecretKeySpec(bytesSimetrica, "AES");
+
+                // pasamos a llave los bytes de la llave para Hash
+                SecretKeySpec llaveHash =  new SecretKeySpec(bytesHash, "HMACSHA256");
+                
+
+                System.out.println("llave hash destruida server: "+ llaveHash.isDestroyed());
+                System.out.println("llave simetrica destruida server: "+ llaveSimetrica.isDestroyed());
                 
 
 

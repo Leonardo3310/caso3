@@ -7,8 +7,6 @@ import java.util.Base64;
 
 public class UtilidadesAES {
     public static String encrypt(String plainText, Key key) throws Exception {
-
-
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         byte[] iv = new byte[16];
         new SecureRandom().nextBytes(iv);

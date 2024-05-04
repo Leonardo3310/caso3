@@ -9,7 +9,7 @@ public class Principal {
             Cliente cliente =  new Cliente(servidor);
 
             servidor.start();
-            servidor.sleep(100);
+            Server.sleep(100);
 
             cliente.start();
 
