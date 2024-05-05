@@ -306,8 +306,26 @@ public class Server extends Thread{
                     out.writeObject("OK");
                 }
 
+                // recibimos los numeros que nos enviaron
+                String numeroCifrado = (String) in.readObject();
+                String numeroHash = (String) in.readObject();
 
+                // verificamos que el numero cifrado es el mismo del hash
+                String numeroDescifrado = cipherAES.decrypt(numeroCifrado, llaveSimetrica, vectorInicializacion);
+
+                byte[] numeroDescifradoHashBytes = cipherRSA.calcularHMac(llaveHash, numeroDescifrado);
+
+                String numeroDescifradoHashString = Base64.getEncoder().encodeToString(numeroDescifradoHashBytes);
+
+
+                if(!numeroDescifradoHashString.equals(numeroHash)){
+                    clientSocket.close();
+                    throw new Exception("El numero no es el mismo que el enviado en el hash");
+                }
                 
+                
+
+
 
 
 

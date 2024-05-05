@@ -234,7 +234,29 @@ public class Cliente extends Thread {
                 socket.close();
                 throw new Exception("La confirmacion del login y la contraseña no fue correcto");
             }
+
+            // AHORA SI HACEMOS LA CONSULTA DEL NUMERO
+
+            // Generamos un numero Random
+            Random random =  new Random();
+            //  el numero es de dos cifras y es maximo 99
+            Integer numeroEnviar = random.nextInt(99);
+            // imprimimos el numero
+            System.out.println("Numero enviado desde el cliente: " + numeroEnviar);
             
+
+            // CIFRAMOS
+            // Ciframos con la llave simetrica el numero
+            String numeroCifrado = cipherAES.encrypt(String.valueOf(numeroEnviar), llaveSimetrica, vectorInicializacion);
+
+            // Hacemoss hash del numero que vamos a enviar
+            byte[] numeroHash =  cipherRSA.calcularHMac(llaveHash, String.valueOf(numeroEnviar));
+            String numeroHashString = Base64.getEncoder().encodeToString(numeroHash);
+
+
+            // enviamos el numero cifrado y el hash de ese numero en string
+            out.writeObject(numeroCifrado);
+            out.writeObject(numeroHashString);
 
 
 
