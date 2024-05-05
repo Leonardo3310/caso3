@@ -270,12 +270,11 @@ public class Cliente extends Thread {
             byte[] numeroRespuestaDescifradoHashBytes = cipherRSA.calcularHMac(llaveHash, numeroRespuestaDescifrado);
             String numeroRespuestaDescifradoHashString = Base64.getEncoder().encodeToString(numeroRespuestaDescifradoHashBytes);
 
-            if(numeroRespuestaHash.equals(numeroRespuestaDescifradoHashString)){
-                System.out.println("LOHICIMOOOOOOOS");
+            if(!numeroRespuestaHash.equals(numeroRespuestaDescifradoHashString)){
+                socket.close();
+                throw new Exception("El numero que esta en el hash no corresponde al numero cifrado");
             }
-            else{
-                System.out.println("revisalo canson");
-            }
+            
 
 
             // ahora verificamos que el numero es el que esperabamos 
@@ -287,10 +286,6 @@ public class Cliente extends Thread {
             if((numeroEnviar -1) == numeroRespuestaInteger){
                 System.out.println(" La conexion funciono, numero correcto");
             }
-
-
-
-
 
 
             // Cerramos el socket  

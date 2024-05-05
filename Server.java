@@ -29,8 +29,7 @@ public class Server extends Thread{
     private Integer numeroG;
 
 
-    // el numero y para calcular Diffie Hellamn
-    private BigInteger numeroY;
+    
 
     // numero X privado para calcular Diffie Hellman
     private BigInteger numeroX;
@@ -140,15 +139,7 @@ public class Server extends Thread{
         
     }
 
-    public void generateNumeroY(){
-        BigInteger numeroGBigIntegr =new BigInteger(String.valueOf(numeroG));
-
-        BigInteger numeroXBigInteger = new BigInteger(String.valueOf(numeroX));
-
-
-        numeroY = numeroGBigIntegr.modPow(numeroXBigInteger, numeroP);
-
-    }
+    
 
 
 
@@ -161,7 +152,6 @@ public class Server extends Thread{
            
             ServerSocket serverSocket = new ServerSocket(port);
             System.out.println("Servidor iniciado en el puerto " + port);
-            Boolean bandera = true;
 
            
             Socket clientSocket = serverSocket.accept(); // Aceptar conexión del cliente
@@ -176,6 +166,8 @@ public class Server extends Thread{
 
                 // Si el string esta incorrecto es decir que la inicializacion esta mal por lo cual enviamos una excepcion
                 if(! (inicializacion.equals("SECURE INIT"))){
+                    serverSocket.close();
+                    clientSocket.close();
                     
                     throw new Exception("Inicializacion mal hecha");
                 }
@@ -188,6 +180,8 @@ public class Server extends Thread{
 
                 // validamos que el cifrado se hizo de forma completa
                 if(retoCifrado ==null){
+                    serverSocket.close();
+                    clientSocket.close();
                     throw new Exception("Cifrado RSA PASO 2 es null");
 
                 }
@@ -200,6 +194,8 @@ public class Server extends Thread{
 
                 // verificamos la respuesta para poder continuar
                 if(confirmacion.equals("ERROR")){
+                    serverSocket.close();
+                    clientSocket.close();
                     throw new Exception("Reto no verificado, mal hecho");
                 }
                 
@@ -239,6 +235,7 @@ public class Server extends Thread{
                 // Alzamos una excepcion si existe un error en la verificacion de los numeros
                 if(verificacionNumeros.equals("ERROR")){
                     clientSocket.close();
+                    serverSocket.close();
                     throw new Exception("Reto no verificado, mal hecho");
                 }
                 
@@ -320,6 +317,7 @@ public class Server extends Thread{
 
                 if(!numeroDescifradoHashString.equals(numeroHash)){
                     clientSocket.close();
+                    serverSocket.close();
                     throw new Exception("El numero no es el mismo que el enviado en el hash");
                 }
 
@@ -335,7 +333,7 @@ public class Server extends Thread{
 
                 out.writeObject(numeroRespuestaCifrado);
                 out.writeObject(numeroRespuestaHash);
-                
+
 
 
 
@@ -347,7 +345,7 @@ public class Server extends Thread{
 
 
                 clientSocket.close();
-                
+                serverSocket.close();
                 
 
 

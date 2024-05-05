@@ -1,6 +1,7 @@
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 public class Principal {
 
@@ -22,17 +23,25 @@ public class Principal {
         for (Map.Entry<Server, Cliente> entry : mapDelegates.entrySet()) {
             entry.getKey().start();
             entry.getValue().start();
-            Server.sleep(5000);
-            Cliente.sleep(5000);
+            Server.sleep(1000);
+            Cliente.sleep(1000);
         }
     }
 
     public static void main(String[] args) throws Exception {
 
         Principal principal = new Principal();
-        principal.generateDelegates(2);
+
+        Scanner scan = new Scanner(System.in);
+
+        System.out.println("Por fravor ingrese el numero de Servidores y clientes que desea correr: ");
+
+        String numeroDelegados = scan.nextLine();
+        principal.generateDelegates(Integer.parseInt(numeroDelegados));
 
         principal.initDelegates();
+
+        scan.close();
 
 
         

@@ -2,7 +2,7 @@ import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 
 import java.security.Key;
-import java.security.SecureRandom;
+
 import java.util.Base64;
 
 public class UtilidadesAES {
