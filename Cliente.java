@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Random;
 import java.util.UUID;
-
 import javax.crypto.spec.SecretKeySpec;
 
 
@@ -105,10 +104,13 @@ public class Cliente extends Thread {
             // Pedimos la llave publica del servidor
             PublicKey publicKey = servidor.llavePublica;
 
-
+            long startTime = System.nanoTime();
             // Con la llave publica desciframos el reto que teniamos
             Boolean retoVerificado = cipherRSA.verificarFirma(reto, retoCifrado, publicKey);
            
+            long endTime = System.nanoTime();
+            long duration = endTime - startTime;  // duración en milisegundos
+            System.out.println("C Verificar firma ns: " + duration);
             // Verificamos en esta parte si coincidio la verificacion del reto o si no
             if(retoVerificado){
                 out.writeObject("OK");
@@ -150,14 +152,22 @@ public class Cliente extends Thread {
             
 
             
-
+            startTime = System.nanoTime();
             // crear el numero X Secreto
             createNumeroY(numeroP);
 
             // Crear el numero G elevado a la Y
             BigInteger numeroGElevadoALaY = BigInteger.valueOf(numeroG).pow(numeroY.intValue()).mod(numeroP);
 
+            endTime = System.nanoTime();
+            duration = endTime - startTime;  // duración en milisegundos
+            System.out.println("C numero G elevado a la y en ns: " + duration);
+
           
+            endTime = System.nanoTime();
+            duration = endTime - startTime;  // duración en milisegundos
+            System.out.println("C numero G elevado a la y en ns: " + duration);
+
 
             //enviar el numero G elevado a la Y
             out.writeObject(numeroGElevadoALaY);
@@ -242,7 +252,7 @@ public class Cliente extends Thread {
             // imprimimos el numero
             System.out.println("Numero enviado desde el cliente: " + numeroEnviar);
             
-
+            startTime = System.nanoTime();
             // CIFRAMOS
             // Ciframos con la llave simetrica el numero
             String numeroCifrado = cipherAES.encrypt(String.valueOf(numeroEnviar), llaveSimetrica, vectorInicializacion);
@@ -255,6 +265,10 @@ public class Cliente extends Thread {
             // enviamos el numero cifrado y el hash de ese numero en string
             out.writeObject(numeroCifrado);
             out.writeObject(numeroHashString);
+
+            endTime = System.nanoTime();
+            duration = endTime - startTime;  // duración en milisegundos
+            System.out.println("C cifrado consulta en ns: " + duration);
 
             // AHROA RECIBIMOS LAS RESPUESTAS DEL SERVIDOR
 
