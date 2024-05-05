@@ -157,7 +157,7 @@ public class Cliente extends Thread {
             // Crear el numero G elevado a la Y
             BigInteger numeroGElevadoALaY = BigInteger.valueOf(numeroG).pow(numeroY.intValue()).mod(numeroP);
 
-            System.out.println(numeroY);
+          
 
             //enviar el numero G elevado a la Y
             out.writeObject(numeroGElevadoALaY);
@@ -166,8 +166,7 @@ public class Cliente extends Thread {
             BigInteger numeroFinal = numeroGElevadoALaX.modPow( numeroY,numeroP);
 
 
-            // Imprimir la llave maestra del Cliente
-            System.out.println("Llave Maestra Cliente: " + numeroFinal);
+            
 
             // Hacer digest con SHA-512
             byte[] digestWithSHA512 = calculateSHA512(numeroFinal.toByteArray());
@@ -199,8 +198,7 @@ public class Cliente extends Thread {
             createLoginAndPassword();
 
 
-            System.out.println("Login: "+ login);
-            System.out.println("Contraseña: " +contraseña);
+            
 
             // ciframos con AES y la llave simetrica el login
             String loginCifrado = cipherAES.encrypt(login, llaveSimetrica, vectorInicializacion);
@@ -280,11 +278,15 @@ public class Cliente extends Thread {
             // ahora verificamos que el numero es el que esperabamos 
             Integer numeroRespuestaInteger = Integer.parseInt(numeroRespuestaDescifrado);
 
-            System.out.println("Numero a enviar: " + numeroEnviar);
-            System.out.println("Numero recibido: " + numeroRespuestaInteger);
+           
+            System.out.println("Numero recibido desde el servidor: " + numeroRespuestaInteger);
 
             if((numeroEnviar -1) == numeroRespuestaInteger){
                 System.out.println(" La conexion funciono, numero correcto");
+            }
+            else{
+                socket.close();
+                throw new Exception("La consulta no funciono, numero incorrecto");
             }
 
 

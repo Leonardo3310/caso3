@@ -22,9 +22,11 @@ public class Principal {
        
         for (Map.Entry<Server, Cliente> entry : mapDelegates.entrySet()) {
             entry.getKey().start();
-            entry.getValue().start();
-            Server.sleep(1000);
             Cliente.sleep(1000);
+            entry.getValue().start();
+            Server.sleep(2000);
+            Cliente.sleep(2000);
+            System.out.println("");
         }
     }
 
@@ -34,9 +36,12 @@ public class Principal {
 
         Scanner scan = new Scanner(System.in);
 
-        System.out.println("Por fravor ingrese el numero de Servidores y clientes que desea correr: ");
+        System.out.println("");
+        System.out.print("Por favor ingrese el numero de Servidores y Clientes que desea correr: ");
+        System.out.println("");
 
         String numeroDelegados = scan.nextLine();
+
         principal.generateDelegates(Integer.parseInt(numeroDelegados));
 
         principal.initDelegates();

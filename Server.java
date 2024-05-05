@@ -246,8 +246,7 @@ public class Server extends Thread{
                 // elevar a la x el numero que nos dieron elevado a la y
                 BigInteger numeroFinal = numeroGElevadoALaY.modPow(numeroX , numeroP);
 
-                //  Imprimir la llave maestra del servidor
-                System.out.println("Llave Maestra Servidor: " + numeroFinal);
+                
 
                 // Hacer digest con SHA-512
                 byte[] digestWithSHA512 = calculateSHA512(numeroFinal.toByteArray());
