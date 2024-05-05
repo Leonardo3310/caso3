@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Random;
 import java.util.UUID;
 
@@ -208,18 +209,37 @@ public class Cliente extends Thread {
 
             String contraseñaCifrada = cipherAES.encrypt(contraseña, llaveSimetrica, vectorInicializacion);
 
-            System.out.println("Contraseña cifrada Cliente:" +contraseñaCifrada);
+            // ahora hacemos un hash de el login y lo enviamos encriptado
+            byte[] loginHash = cipherRSA.calcularHMac(llaveHash, login);
+            String loginHashString = Base64.getEncoder().encodeToString(loginHash);
+
+            // ahora hacemos un hash de la contraseña y lo enviamos encriptado
+            byte[] contraseñaHash = cipherRSA.calcularHMac(llaveHash, contraseña);
+            String contraseñaHashString = Base64.getEncoder().encodeToString(contraseñaHash);
+
+            // ahora encriptamos estos dos hash
+            String contraseñaHashEncriptada = cipherAES.encrypt(contraseñaHashString, llaveSimetrica, vectorInicializacion);
+            String loginHashEncriptado = cipherAES.encrypt(loginHashString, llaveSimetrica, vectorInicializacion);
 
             out.writeObject(loginCifrado);
             out.writeObject(contraseñaCifrada);
+            out.writeObject(loginHashEncriptado);
+            out.writeObject(contraseñaHashEncriptada);
+
+
+            // Recibimos la confirmacion de el servidor que las contraseñas son correctas
+            String confirmacionLoginYContraseña = (String) in.readObject();
+
+            if(confirmacionLoginYContraseña.equals("ERROR")){
+                socket.close();
+                throw new Exception("La confirmacion del login y la contraseña no fue correcto");
+            }
+            
 
 
 
 
 
-
-
-           
 
 
             // Cerramos el socket  

@@ -1,8 +1,13 @@
 
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.util.Base64;
+
+import javax.crypto.Mac;
 
 
 
@@ -35,6 +40,18 @@ public class UtilidadesRSA {
         sig.initVerify(publicKey);
         sig.update(data.getBytes());
         return sig.verify(Base64.getDecoder().decode(signature));
+    }
+
+    public byte[] calcularHMac(Key llaveCifrado, String mensaje) throws NoSuchAlgorithmException, InvalidKeyException{
+        Mac mac = Mac.getInstance("HmacSHA256");
+
+        mac.init(llaveCifrado);
+
+        byte [] hmac = mac.doFinal(mensaje.getBytes());
+
+        return hmac;
+
+
     }
 
     

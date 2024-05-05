@@ -9,6 +9,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Random;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -237,6 +238,7 @@ public class Server extends Thread{
 
                 // Alzamos una excepcion si existe un error en la verificacion de los numeros
                 if(verificacionNumeros.equals("ERROR")){
+                    clientSocket.close();
                     throw new Exception("Reto no verificado, mal hecho");
                 }
                 
@@ -269,15 +271,45 @@ public class Server extends Thread{
                 // Le decimos al cliente que continue con el proceso
                 out.writeObject("CONTINUAR");
 
-
+                // recibimos los datos que nos envia el cliente de su login 
                 String loginCifrado = (String) in.readObject();
                 String contraseñaCifrada = (String)  in.readObject();
+                String loginHashEncriptado = (String) in.readObject();
+                String contraseñaHashEncriptada = (String) in.readObject();
 
-                System.out.println("Contraseña cifrada Servidor:" +contraseñaCifrada);
+               
+                // Desencriptamos todo
+                String login = cipherAES.decrypt(loginCifrado, llaveSimetrica, vectorInicializacion);
+                String contraseña = cipherAES.decrypt(contraseñaCifrada, llaveSimetrica, vectorInicializacion);
+                String loginHash =  cipherAES.decrypt(loginHashEncriptado, llaveSimetrica, vectorInicializacion);
+                String contraseñaHash = cipherAES.decrypt(contraseñaHashEncriptada, llaveSimetrica, vectorInicializacion);
+
+                // pasamos los logins y contraseña a Hash
+                byte[] loginVerificadoBytes = cipherRSA.calcularHMac(llaveHash, login);
+                String loginVerificadoString = Base64.getEncoder().encodeToString(loginVerificadoBytes);
+
+                // pasamos las contraseñas a hash
+                byte[] contraseñaVerificadaBytes = cipherRSA.calcularHMac(llaveHash, contraseña);
+                String contraseñaVerificadaString = Base64.getEncoder().encodeToString(contraseñaVerificadaBytes);
+
+                // verificamos que lo que nos enviaron es verdadero
+                if(!loginHash.equals(loginVerificadoString)){
+                    out.writeObject("ERROR");
+                    clientSocket.close();
+                    
+                }
+                if(!contraseñaHash.equals(contraseñaVerificadaString)){
+                    out.writeObject("ERROR");
+                    clientSocket.close();
+                }
+                else{
+                    out.writeObject("OK");
+                }
+
+
                 
-                String loginVerificado = cipherAES.decrypt(loginCifrado, llaveSimetrica, vectorInicializacion);
 
-                System.out.println(loginVerificado);
+
 
 
                 clientSocket.close();
