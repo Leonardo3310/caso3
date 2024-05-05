@@ -322,7 +322,23 @@ public class Server extends Thread{
                     clientSocket.close();
                     throw new Exception("El numero no es el mismo que el enviado en el hash");
                 }
+
+                // PASAMOS EL NUMERO DESCIFRADO A INT y le restamos 1 
+                Integer numeroRespuesta = Integer.parseInt(numeroDescifrado)- 1;
+
+                // ciframos este Numero
+                String numeroRespuestaCifrado = cipherAES.encrypt(String.valueOf(numeroRespuesta), llaveSimetrica, vectorInicializacion);
+
+                // mandamos el numero a hash
+                byte[] numeroRespuestaBytes = cipherRSA.calcularHMac(llaveHash, String.valueOf(numeroRespuesta));
+                String numeroRespuestaHash = Base64.getEncoder().encodeToString(numeroRespuestaBytes);
+
+                out.writeObject(numeroRespuestaCifrado);
+                out.writeObject(numeroRespuestaHash);
                 
+
+
+
                 
 
 

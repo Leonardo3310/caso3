@@ -258,6 +258,35 @@ public class Cliente extends Thread {
             out.writeObject(numeroCifrado);
             out.writeObject(numeroHashString);
 
+            // AHROA RECIBIMOS LAS RESPUESTAS DEL SERVIDOR
+
+            String numeroRespuestaCifrado = (String) in.readObject();
+            String numeroRespuestaHash = (String) in.readObject();
+
+
+            // Desciframos el numero 
+            String numeroRespuestaDescifrado = cipherAES.decrypt(numeroRespuestaCifrado, llaveSimetrica, vectorInicializacion);
+            // lo pasamos a un hash para verificar integridad
+            byte[] numeroRespuestaDescifradoHashBytes = cipherRSA.calcularHMac(llaveHash, numeroRespuestaDescifrado);
+            String numeroRespuestaDescifradoHashString = Base64.getEncoder().encodeToString(numeroRespuestaDescifradoHashBytes);
+
+            if(numeroRespuestaHash.equals(numeroRespuestaDescifradoHashString)){
+                System.out.println("LOHICIMOOOOOOOS");
+            }
+            else{
+                System.out.println("revisalo canson");
+            }
+
+
+            // ahora verificamos que el numero es el que esperabamos 
+            Integer numeroRespuestaInteger = Integer.parseInt(numeroRespuestaDescifrado);
+
+            System.out.println("Numero a enviar: " + numeroEnviar);
+            System.out.println("Numero recibido: " + numeroRespuestaInteger);
+
+            if((numeroEnviar -1) == numeroRespuestaInteger){
+                System.out.println(" La conexion funciono, numero correcto");
+            }
 
 
 
