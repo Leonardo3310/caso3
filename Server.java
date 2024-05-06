@@ -11,7 +11,6 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Random;
-
 import javax.crypto.spec.SecretKeySpec;
 
 public class Server extends Thread{
@@ -175,9 +174,13 @@ public class Server extends Thread{
                 // Cuando ya inicializamos la conexion recibimos el reto que es un array de 16 bytes aleatorios
                 byte[] reto =(byte[]) in.readObject();
 
+                long startTime = System.nanoTime();
                 // Ciframos el reto que acabamos de recibir con nuestra llave privada
                 byte[] retoCifrado = cipherRSA.firmar(reto, llavePrivada);
 
+                long endTime = System.nanoTime();
+                long duration = endTime - startTime;  // duración en milisegundos
+                System.out.println("S generar firma ns: " + duration);
                 // validamos que el cifrado se hizo de forma completa
                 if(retoCifrado ==null){
                     serverSocket.close();
@@ -306,19 +309,32 @@ public class Server extends Thread{
                 String numeroCifrado = (String) in.readObject();
                 String numeroHash = (String) in.readObject();
 
+                startTime = System.nanoTime();
+
                 // verificamos que el numero cifrado es el mismo del hash
                 String numeroDescifrado = cipherAES.decrypt(numeroCifrado, llaveSimetrica, vectorInicializacion);
+
+                endTime = System.nanoTime();
+                duration = endTime - startTime;  // duración en milisegundos
+                System.out.println("S descifrar consulta en ns: " + duration);
+
+                startTime = System.nanoTime();
 
                 byte[] numeroDescifradoHashBytes = cipherRSA.calcularHMac(llaveHash, numeroDescifrado);
 
                 String numeroDescifradoHashString = Base64.getEncoder().encodeToString(numeroDescifradoHashBytes);
 
+                
 
                 if(!numeroDescifradoHashString.equals(numeroHash)){
                     clientSocket.close();
                     serverSocket.close();
                     throw new Exception("El numero no es el mismo que el enviado en el hash");
                 }
+
+                endTime = System.nanoTime();
+                duration = endTime - startTime;  // duración en milisegundos
+                System.out.println("S verificar  en ns: " + duration);
 
                 // PASAMOS EL NUMERO DESCIFRADO A INT y le restamos 1 
                 Integer numeroRespuesta = Integer.parseInt(numeroDescifrado)- 1;

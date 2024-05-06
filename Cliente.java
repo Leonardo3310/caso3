@@ -163,10 +163,6 @@ public class Cliente extends Thread {
             duration = endTime - startTime;  // duración en milisegundos
             System.out.println("C numero G elevado a la y en ns: " + duration);
 
-          
-            endTime = System.nanoTime();
-            duration = endTime - startTime;  // duración en milisegundos
-            System.out.println("C numero G elevado a la y en ns: " + duration);
 
 
             //enviar el numero G elevado a la Y
@@ -256,19 +252,24 @@ public class Cliente extends Thread {
             // CIFRAMOS
             // Ciframos con la llave simetrica el numero
             String numeroCifrado = cipherAES.encrypt(String.valueOf(numeroEnviar), llaveSimetrica, vectorInicializacion);
+            endTime = System.nanoTime();
+            duration = endTime - startTime;  // duración en milisegundos
+            System.out.println("C cifrado consulta en ns: " + duration);
 
+            startTime = System.nanoTime();
             // Hacemoss hash del numero que vamos a enviar
             byte[] numeroHash =  cipherRSA.calcularHMac(llaveHash, String.valueOf(numeroEnviar));
             String numeroHashString = Base64.getEncoder().encodeToString(numeroHash);
 
+            endTime = System.nanoTime();
+            duration = endTime - startTime;  // duración en milisegundos
+            System.out.println("C generar numero autenticacion en ns: " + duration);
 
             // enviamos el numero cifrado y el hash de ese numero en string
             out.writeObject(numeroCifrado);
             out.writeObject(numeroHashString);
 
-            endTime = System.nanoTime();
-            duration = endTime - startTime;  // duración en milisegundos
-            System.out.println("C cifrado consulta en ns: " + duration);
+            
 
             // AHROA RECIBIMOS LAS RESPUESTAS DEL SERVIDOR
 
